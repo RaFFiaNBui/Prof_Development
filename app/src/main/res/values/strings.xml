@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">ProDev</string>
+    <string name="search">Search</string>
+    <string name="new_word">New word</string>
+    <string name="unknown_error">Unknown Error</string>
+    <string name="reload_button">Reload Button</string>
+    <string name="empty_server_response_on_success">Response from server is empty</string>
 </resources>
