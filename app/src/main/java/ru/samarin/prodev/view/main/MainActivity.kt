@@ -1,26 +1,32 @@
 package ru.samarin.prodev.view.main
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
 import ru.samarin.prodev.R
+import ru.samarin.prodev.model.data.AppState
 import ru.samarin.prodev.model.data.DataModel
-import ru.samarin.prodev.model.data.SearchResult
-import ru.samarin.prodev.presenter.Presenter
 import ru.samarin.prodev.view.base.BaseActivity
-import ru.samarin.prodev.view.base.View
 
-class MainActivity : BaseActivity<DataModel>() {
+class MainActivity : BaseActivity<AppState,MainInteractor>() {
 
+    private val observer = Observer<AppState> {renderData(it)}
     private val adapter: MainAdapter? = null
     private val onListItemClickListener: MainAdapter.OnListItemClickListener =
         object : MainAdapter.OnListItemClickListener{
-            override fun onItemClick(data: SearchResult) {
+            override fun onItemClick(data: DataModel) {
                 Toast.makeText(this@MainActivity,data.text,Toast.LENGTH_SHORT).show()
             }
         }
+
+    override val model: MainViewModel by lazy {
+        ViewModelProvider.NewInstanceFactory().create(MainViewModel::class.java)
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -28,46 +34,42 @@ class MainActivity : BaseActivity<DataModel>() {
             val searchDialogFragment = SearchDialogFragment.newInstance()
             searchDialogFragment.setOnSearchClickListener(object : SearchDialogFragment.OnSearchClickListener {
                 override fun onClick(searchWord: String) {
-                    presenter.getData(searchWord,true)
+                    model.getData(searchWord,true).observe(this@MainActivity,observer)
                 }
             })
             searchDialogFragment.show(supportFragmentManager,SEARCH_TAG)
         }
     }
 
-    override fun createPresenter(): Presenter<DataModel, View> {
-        return MainPresenterImpl()
-    }
-
-    override fun renderData(dataModel: DataModel) {
-        when (dataModel) {
-            is DataModel.Success -> {
-                val searchResult = dataModel.data
-                if (searchResult == null || searchResult.isEmpty()) {
+    override fun renderData(appState: AppState) {
+        when (appState) {
+            is AppState.Success -> {
+                val data = appState.data
+                if (data == null || data.isEmpty()) {
                     showErrorScreen(getString(R.string.empty_server_response_on_success))
                 } else {
                     showViewSuccess()
                     if (adapter == null) {
                         recyclerview.layoutManager = LinearLayoutManager(applicationContext)
-                        recyclerview.adapter = MainAdapter(onListItemClickListener, searchResult)
+                        recyclerview.adapter = MainAdapter(onListItemClickListener, data)
                     } else {
-                        adapter!!.setData(searchResult)
+                        adapter!!.setData(data)
                     }
                 }
             }
-            is DataModel.Loading -> {
+            is AppState.Loading -> {
                 showViewLoading()
-                if (dataModel.progress != null) {
+                if (appState.load != null) {
                     progressbar_horizontal.visibility = android.view.View.VISIBLE
                     progressbar_circular.visibility = android.view.View.GONE
-                    progressbar_horizontal.progress = dataModel.progress
+                    progressbar_horizontal.progress = appState.load
                 } else {
                     progressbar_horizontal.visibility = android.view.View.GONE
                     progressbar_circular.visibility = android.view.View.VISIBLE
                 }
             }
-            is DataModel.Error -> {
-                showErrorScreen(dataModel.error.message)
+            is AppState.Error -> {
+                showErrorScreen(appState.error.message)
             }
         }
     }
@@ -76,7 +78,7 @@ class MainActivity : BaseActivity<DataModel>() {
         showViewError()
         error_textview.text = error ?: getString(R.string.unknown_error)
         reload_button.setOnClickListener {
-            presenter.getData("hi", true)
+            model.getData("hi", true).observe(this,observer)
         }
     }
 

@@ -1,28 +1,12 @@
 package ru.samarin.prodev.view.base
 
-import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import ru.samarin.prodev.model.data.DataModel
-import ru.samarin.prodev.presenter.Presenter
+import ru.samarin.prodev.model.data.AppState
+import ru.samarin.prodev.viewmodel.BaseViewModel
+import ru.samarin.prodev.viewmodel.Interactor
 
-abstract class BaseActivity<T : DataModel> : AppCompatActivity(), View {
+abstract class BaseActivity<T : AppState, I : Interactor<T>> : AppCompatActivity() {
 
-    protected lateinit var presenter: Presenter<T, View>
-    protected abstract fun createPresenter(): Presenter<T, View>
-    abstract override fun renderData(dataModel: DataModel)
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        presenter = createPresenter()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        presenter.attachView(this)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        presenter.detachView(this)
-    }
+    abstract val model: BaseViewModel<T>
+    abstract fun renderData(dataModel: T)
 }
