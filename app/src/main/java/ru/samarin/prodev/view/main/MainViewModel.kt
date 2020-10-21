@@ -1,23 +1,20 @@
 package ru.samarin.prodev.view.main
 
 import androidx.lifecycle.LiveData
+import io.reactivex.disposables.Disposable
 import io.reactivex.observers.DisposableObserver
 import ru.samarin.prodev.model.data.AppState
-import ru.samarin.prodev.model.datasource.DataSourceLocal
-import ru.samarin.prodev.model.datasource.DataSourceRemote
-import ru.samarin.prodev.model.repository.RepositoryImplementation
+import ru.samarin.prodev.utils.parseSearchResult
 import ru.samarin.prodev.viewmodel.BaseViewModel
+import javax.inject.Inject
 
-class MainViewModel(
-    private val interactor: MainInteractor = MainInteractor(
-        RepositoryImplementation(DataSourceRemote()),
-        RepositoryImplementation(DataSourceLocal())
-    )
+class MainViewModel @Inject constructor(
+    private val interactor: MainInteractor
 ) : BaseViewModel<AppState>() {
 
     private var appState: AppState? = null
 
-    override fun getData(word: String, isOnline: Boolean): LiveData<AppState> {
+    override fun getData(word: String, isOnline: Boolean) {
         compositeDisposable.add(
             interactor.getData(word, isOnline)
                 .subscribeOn(schedulerProvider.io())
@@ -25,7 +22,6 @@ class MainViewModel(
                 .doOnSubscribe { liveDataForViewToObserve.value = AppState.Loading(null) }
                 .subscribeWith(getObserver())
         )
-        return super.getData(word, isOnline)
     }
 
     private fun getObserver(): DisposableObserver<AppState> {
@@ -33,13 +29,21 @@ class MainViewModel(
             override fun onComplete() {}
 
             override fun onNext(t: AppState) {
-                appState = t
-                liveDataForViewToObserve.value = t
+                appState = parseSearchResult(t)
+                liveDataForViewToObserve.value = appState
             }
 
             override fun onError(e: Throwable) {
                 liveDataForViewToObserve.value = AppState.Error(e)
             }
         }
+    }
+
+    fun subscribe(): LiveData<AppState> {
+        return liveDataForViewToObserve
+    }
+
+    private fun doOnSubscribe(): (Disposable) -> Unit = {
+        liveDataForViewToObserve.value = AppState.Loading(null)
     }
 }

@@ -5,4 +5,7 @@
     <string name="unknown_error">Unknown Error</string>
     <string name="reload_button">Reload Button</string>
     <string name="empty_server_response_on_success">Response from server is empty</string>
+    <string name="cancel">Cancel</string>
+    <string name="dialog_title_offline">No internet connection</string>
+    <string name="dialog_message_offline">Check internet connection</string>
 </resources>
