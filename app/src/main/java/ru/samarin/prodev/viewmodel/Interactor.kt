@@ -1,4 +1,4 @@
-package ru.samarin.prodev.presenter
+package ru.samarin.prodev.viewmodel
 
 import io.reactivex.Observable
 
