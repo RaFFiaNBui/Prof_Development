@@ -1,27 +1,17 @@
 package ru.samarin.prodev.application
 
-import android.app.Activity
 import android.app.Application
-import dagger.android.AndroidInjector
-import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasActivityInjector
-import ru.samarin.prodev.di.DaggerAppComponent
-import javax.inject.Inject
+import org.koin.core.context.startKoin
 
-class MyApp : Application(), HasActivityInjector {
+import ru.samarin.prodev.di.application
+import ru.samarin.prodev.di.mainScreen
 
-    @Inject
-    lateinit var dispatchingAndroidInjector:DispatchingAndroidInjector<Activity>
-
-    override fun activityInjector(): AndroidInjector<Activity> {
-        return dispatchingAndroidInjector
-    }
+class MyApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        DaggerAppComponent.builder()
-            .application(this)
-            .build()
-            .inject(this)
+        startKoin {
+            modules(listOf(application, mainScreen))
+        }
     }
 }
