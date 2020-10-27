@@ -44,6 +44,7 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
             searchDialogFragment.show(supportFragmentManager, SEARCH_TAG)
         }
     }
+/*
 
     override fun renderData(appState: AppState) {
         when (appState) {
@@ -86,6 +87,7 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
         success_layout.visibility = android.view.View.GONE
         loading_layout.visibility = android.view.View.VISIBLE
     }
+*/
 
     companion object {
         private const val SEARCH_TAG = "43543"
@@ -110,5 +112,11 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
         val viewModel: MainViewModel by viewModel()
         model = viewModel
         model.subscribe().observe(this@MainActivity, Observer<AppState> { renderData(it) })
+    }
+
+    override fun setDataToAdapter(data: List<DataModel>) {
+        recyclerview.layoutManager = LinearLayoutManager(applicationContext)
+        recyclerview.adapter = adapter
+        adapter.setData(data)
     }
 }
