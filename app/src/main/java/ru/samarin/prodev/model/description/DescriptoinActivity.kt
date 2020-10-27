@@ -13,6 +13,8 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
+import com.squareup.picasso.Callback
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_descriptoin.*
 import ru.samarin.prodev.R
 import ru.samarin.prodev.utils.AlertDialogFragment
@@ -65,7 +67,8 @@ class DescriptoinActivity : AppCompatActivity() {
         if (imageLink.isNullOrBlank()) {
             stopRefreshAnimation()
         } else {
-            loadFotoWithGlide(description_image, imageLink)
+            //loadFotoWithGlide(description_image, imageLink)
+            loadFotoWithPicasso(description_image, imageLink)
         }
     }
 
@@ -119,5 +122,23 @@ class DescriptoinActivity : AppCompatActivity() {
                     .centerCrop()
             )
             .into(imageView)
+    }
+
+    private fun loadFotoWithPicasso(imageView: ImageView, imageLink: String) {
+        Picasso.with(applicationContext)
+            .load("https:$imageLink")
+            .placeholder(R.drawable.ic_baseline_image_24)
+            .error(R.drawable.ic_baseline_error_24)
+            .fit()
+            .centerCrop()
+            .into(imageView, object : Callback {
+                override fun onSuccess() {
+                    stopRefreshAnimation()
+                }
+
+                override fun onError() {
+                    stopRefreshAnimation()
+                }
+            })
     }
 }
