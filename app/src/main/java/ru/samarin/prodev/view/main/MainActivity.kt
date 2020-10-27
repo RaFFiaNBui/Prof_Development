@@ -9,6 +9,8 @@ import org.koin.android.viewmodel.ext.android.viewModel
 import ru.samarin.prodev.R
 import ru.samarin.prodev.model.data.AppState
 import ru.samarin.prodev.model.data.DataModel
+import ru.samarin.prodev.model.description.DescriptoinActivity
+import ru.samarin.prodev.utils.convertMeaningsToString
 import ru.samarin.prodev.utils.isOnline
 import ru.samarin.prodev.view.base.BaseActivity
 
@@ -19,6 +21,14 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
         object : MainAdapter.OnListItemClickListener {
             override fun onItemClick(data: DataModel) {
                 Toast.makeText(this@MainActivity, data.text, Toast.LENGTH_SHORT).show()
+                startActivity(
+                    DescriptoinActivity.getIntent(
+                        this@MainActivity,
+                        data.text!!,
+                        convertMeaningsToString(data.meanings!!),
+                        data.meanings[0].imageUrl
+                    )
+                )
             }
         }
 
