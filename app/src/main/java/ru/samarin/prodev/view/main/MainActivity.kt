@@ -3,23 +3,17 @@ package ru.samarin.prodev.view.main
 import android.os.Bundle
 import android.widget.Toast
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_main.*
+import org.koin.android.viewmodel.ext.android.viewModel
 import ru.samarin.prodev.R
 import ru.samarin.prodev.model.data.AppState
 import ru.samarin.prodev.model.data.DataModel
 import ru.samarin.prodev.utils.isOnline
 import ru.samarin.prodev.view.base.BaseActivity
-import javax.inject.Inject
 
 class MainActivity : BaseActivity<AppState, MainInteractor>() {
 
-    @Inject
-    internal lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val observer = Observer<AppState> { renderData(it) }
     private val adapter: MainAdapter by lazy { MainAdapter(onListItemClickListener) }
     private val onListItemClickListener: MainAdapter.OnListItemClickListener =
         object : MainAdapter.OnListItemClickListener {
@@ -31,11 +25,9 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
     override lateinit var model: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        model = viewModelFactory.create(MainViewModel::class.java)
-        model.subscribe().observe(this@MainActivity, observer)
+        initViewModel()
         fab.setOnClickListener {
             val searchDialogFragment = SearchDialogFragment.newInstance()
             searchDialogFragment.setOnSearchClickListener(onSearchClickListener)
@@ -51,7 +43,6 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
                 if (data.isNullOrEmpty()) {
                     showAlertDialog("Fail", "No definitions found")
                 } else {
-
                     recyclerview.layoutManager = LinearLayoutManager(applicationContext)
                     recyclerview.adapter = adapter
                     adapter.setData(data)
@@ -101,4 +92,13 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
                 }
             }
         }
+
+    private fun initViewModel() {
+        if (recyclerview.adapter != null) {
+            throw IllegalStateException("The ViewModel should be initialized first")
+        }
+        val viewModel: MainViewModel by viewModel()
+        model = viewModel
+        model.subscribe().observe(this@MainActivity, Observer<AppState> { renderData(it) })
+    }
 }
