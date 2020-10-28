@@ -9,6 +9,8 @@ import org.koin.android.viewmodel.ext.android.viewModel
 import ru.samarin.prodev.R
 import ru.samarin.prodev.model.data.AppState
 import ru.samarin.prodev.model.data.DataModel
+import ru.samarin.prodev.model.description.DescriptoinActivity
+import ru.samarin.prodev.utils.convertMeaningsToString
 import ru.samarin.prodev.utils.isOnline
 import ru.samarin.prodev.view.base.BaseActivity
 
@@ -19,6 +21,14 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
         object : MainAdapter.OnListItemClickListener {
             override fun onItemClick(data: DataModel) {
                 Toast.makeText(this@MainActivity, data.text, Toast.LENGTH_SHORT).show()
+                startActivity(
+                    DescriptoinActivity.getIntent(
+                        this@MainActivity,
+                        data.text!!,
+                        convertMeaningsToString(data.meanings!!),
+                        data.meanings[0].imageUrl
+                    )
+                )
             }
         }
 
@@ -34,6 +44,7 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
             searchDialogFragment.show(supportFragmentManager, SEARCH_TAG)
         }
     }
+/*
 
     override fun renderData(appState: AppState) {
         when (appState) {
@@ -76,6 +87,7 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
         success_layout.visibility = android.view.View.GONE
         loading_layout.visibility = android.view.View.VISIBLE
     }
+*/
 
     companion object {
         private const val SEARCH_TAG = "43543"
@@ -100,5 +112,11 @@ class MainActivity : BaseActivity<AppState, MainInteractor>() {
         val viewModel: MainViewModel by viewModel()
         model = viewModel
         model.subscribe().observe(this@MainActivity, Observer<AppState> { renderData(it) })
+    }
+
+    override fun setDataToAdapter(data: List<DataModel>) {
+        recyclerview.layoutManager = LinearLayoutManager(applicationContext)
+        recyclerview.adapter = adapter
+        adapter.setData(data)
     }
 }
